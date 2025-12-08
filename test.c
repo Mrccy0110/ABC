@@ -1,21 +1,202 @@
 
 
-/* project P: buffer_utils.c —— 全新的内部 API */
 
-#include <string.h>
 
-/* 读取数据后，根据目标缓冲区大小安全拷贝 */
-size_t copy_line_safely(char *dst, size_t dst_cap,
-                        const char *src, size_t src_cap) {
-    size_t n = src_cap;
 
-    /* 再次裁剪，保证不超过 dst_cap */
-    if (n > dst_cap - 1) {
-        n = dst_cap - 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int handle_request(int fd) {
+    char recv_buf[512];
+    char user_msg[128];
+
+    ssize_t n = net_read_line(fd, recv_buf, sizeof(recv_buf) - 1);
+    if (n <= 0) return -1;
+    recv_buf[n] = '\0';
+
+    copy_line_safely(user_msg, sizeof(user_msg), recv_buf, (size_t)n);
+
+
+    if (strcmp(user_msg, "PING") == 0) {
+        const char *resp = "PONG\n";
+        (void)write(fd, resp, strlen(resp));
+    } else if (strncmp(user_msg, "ECHO ", 5) == 0) {
+        const char *prefix = "ECHOED: ";
+        char outbuf[256];
+        int len = snprintf(outbuf, sizeof(outbuf), "%s%s\n",
+                           prefix, user_msg + 5);
+        if (len < 0) {
+            return -1;
+        }
+        if ((size_t)len > sizeof(outbuf)) {
+            len = (int)sizeof(outbuf);
+        }
+        (void)write(fd, outbuf, (size_t)len);
+    } else {
+        const char *resp = "OK\n";
+        (void)write(fd, resp, strlen(resp));
     }
-
-    memcpy(dst, src, n);   // 形态上：tainted length + memcpy
-    dst[n] = '\0';
-
-    return n;
-}
