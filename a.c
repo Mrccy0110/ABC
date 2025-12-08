@@ -189,7 +189,7 @@ size_t copy_line_safely(char *dst, size_t dst_cap,
     if (n > dst_cap - 1) {
         n = dst_cap - 1;
     }
-    memcpy(dst, src, n);   // 形态上：tainted length + memcpy
+    memcpy(dst, src, n);
     dst[n] = '\0';
     return n;
 }
