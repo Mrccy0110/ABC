@@ -194,5 +194,18 @@ size_t copy_line_safely(char *dst, size_t dst_cap,
     return n;
 }
 
-
+int get_client_limit(app_ctx_t *app) {
+    if (!app->prefs.initialized) {
+        if (load_client_prefs(app) != 0) {
+            return 32;
+        }
+    }
+    int limit = app->prefs.max_items;
+    if (limit <= 0) {
+        limit = 1;
+    } else if (limit > 100000) {
+        limit = 100000;
+    }
+    return limit;
+}
 
